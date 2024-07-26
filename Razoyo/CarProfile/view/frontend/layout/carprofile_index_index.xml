@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="customer_account"/>
+    <head>
+        <css src="Razoyo_CarProfile::css/carprofile.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template" name="my_carprofiles" template="Razoyo_CarProfile::account/list.phtml" >
+                <arguments>
+                    <argument xsi:type="object" name="car_list">Razoyo\CarProfile\ViewModel\CarData</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

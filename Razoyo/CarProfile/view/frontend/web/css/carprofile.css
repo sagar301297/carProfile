@@ -1,0 +1,59 @@
+.car-details {
+    margin-bottom: 2rem;
+}
+
+.car-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.car-image {
+    flex: 1 1 300px;
+}
+
+.car-photo {
+    max-width: 100%;
+    height: auto;
+}
+
+.car-specs {
+    flex: 1 1 300px;
+}
+
+.car-attributes {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.car-attributes li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #cccccc;
+}
+
+.car-attributes li:last-child {
+    border-bottom: none;
+}
+
+.car-attributes .label {
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.car-attributes .value {
+    color: #333333;
+}
+
+.form.car-profile .fieldset {
+    margin-bottom: 20px;
+}
+
+.form.car-profile .legend {
+    margin: 0 0 15px;
+}
+
+.form.car-profile .action.submit:hover {
+    background: #006bb4;
+    border: 1px solid #006bb4;
+}

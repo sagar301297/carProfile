@@ -1,0 +1,93 @@
+<?php
+/** @var \Razoyo\CarProfile\ViewModel\CarData $viewModel */
+/** @var $block \Magento\Framework\View\Element\Template */
+
+$viewModel = $block->getData('car_list');
+$carData = $viewModel->getCarData();
+$selectedCarId = $viewModel->getSelectedCar();
+$carDetails = null;
+
+
+if ($selectedCarId) {
+    // Fetch car details using the token
+    $token = $carData['token'];
+    $carDetails = $viewModel->getCarDetails($selectedCarId, $token);
+    // Check for token expiration and retry if necessary
+    if (isset($carDetails['error']) && $carDetails['error'] === 'forbidden') {
+        $carData = $viewModel->getCarData(); // Fetch new token
+        $token = $carData['token'];
+        $carDetails = $viewModel->getCarDetails($selectedCarId, $token);
+    }
+}
+
+?>
+
+
+<?php if ($carDetails && isset($carDetails['car'])): ?>
+<div class="car-details">
+    <legend class="legend"><span><?= $block->escapeHtml(__('Car Details')) ?></span></legend>
+    <div class="car-info">
+        <div class="car-image">
+            <img src="<?= $block->escapeUrl($carDetails['car']['image']) ?>" 
+                 alt="<?= $block->escapeHtml($carDetails['car']['make'] . ' ' . $carDetails['car']['model']) ?>"
+                 class="car-photo">
+        </div>
+        <div class="car-specs">
+            <ul class="car-attributes">
+                <li>
+                    <span class="label"><?= $block->escapeHtml(__('Year')) ?>:</span>
+                    <span class="value"><?= $block->escapeHtml($carDetails['car']['year']) ?></span>
+                </li>
+                <li>
+                    <span class="label"><?= $block->escapeHtml(__('Make')) ?>:</span>
+                    <span class="value"><?= $block->escapeHtml($carDetails['car']['make']) ?></span>
+                </li>
+                <li>
+                    <span class="label"><?= $block->escapeHtml(__('Model')) ?>:</span>
+                    <span class="value"><?= $block->escapeHtml($carDetails['car']['model']) ?></span>
+                </li>
+                <li>
+                    <span class="label"><?= $block->escapeHtml(__('Price')) ?>:</span>
+                    <span class="value"><?= $block->escapeHtml($viewModel->getFormattedPrice($carDetails['car']['price'])) ?></span>
+                </li>
+                <li>
+                    <span class="label"><?= $block->escapeHtml(__('Seats')) ?>:</span>
+                    <span class="value"><?= $block->escapeHtml($carDetails['car']['seats']) ?></span>
+                </li>
+                <li>
+                    <span class="label"><?= $block->escapeHtml(__('MPG')) ?>:</span>
+                    <span class="value"><?= $block->escapeHtml($carDetails['car']['mpg']) ?></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<?php else: ?>
+    <p><?= __('You have not selected a car yet.') ?></p>
+<?php endif; ?>
+
+<form id="car-profile-form" class="form car-profile" method="post" action="<?= $block->escapeUrl($block->getUrl('carprofile/account/save')) ?>">
+    <fieldset class="fieldset">
+        <legend class="legend"><span><?= $block->escapeHtml(__('Car Selection')) ?></span></legend>
+        <div class="field car-select">
+            <label for="car-select" class="label"><span><?= $block->escapeHtml(__('Choose a car:')) ?></span></label>
+            <div class="control">
+                <select id="car-select" name="car-selection" class="select" >
+                    <option value=""><?= $block->escapeHtml(__('Select a car')) ?></option>
+                    <?php foreach ($carData['cars'] as $car): ?>
+                        <option value="<?= $block->escapeHtmlAttr($car['id']) ?>" <?= $car['id'] === $selectedCarId ? 'selected' : '' ?>>
+                            <?= $block->escapeHtml($car['year'] . ' ' . $car['make'] . ' ' . $car['model']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+    </fieldset>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" class="action submit primary" title="<?= $block->escapeHtmlAttr(__('Submit')) ?>">
+                <span><?= $block->escapeHtml(__('Submit')) ?></span>
+            </button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,19 @@
+{
+    "name": "razoyo/module-car-profile",
+    "description": "Car Profile module for Magento 2",
+    "type": "magento2-module",
+    "version": "1.1.0",
+    "require": {
+        "php": "~7.4.0||~8.1.0||~8.2.0||~8.3.0",
+        "magento/framework": "*",
+        "magento/module-customer": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Razoyo\\CarProfile\\": ""
+        }
+    }
+}
