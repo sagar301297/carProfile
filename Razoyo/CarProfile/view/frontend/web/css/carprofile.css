@@ -57,3 +57,38 @@
     background: #006bb4;
     border: 1px solid #006bb4;
 }
+
+.alert {
+    padding: 15px;
+    margin-top: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+}
+
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
+#car-profile-messages {
+    margin-top: 20px;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.alert.auto-dismiss {
+    animation: fadeOut 1s ease-in-out 2s forwards;
+}

@@ -60,7 +60,7 @@ class InstallData implements InstallDataInterface
             ->addData([
                 'attribute_set_id' => $attributeSetId,
                 'attribute_group_id' => $attributeGroupId,
-                'used_in_forms' => ['adminhtml_customer'],//you can use other forms also ['adminhtml_customer_address', 'customer_account_edit', 'customer_address_edit', 'customer_register_address', 'customer_account_create']
+                'used_in_forms' => ['adminhtml_customer'],
             ]);
         $attribute->save();
     }

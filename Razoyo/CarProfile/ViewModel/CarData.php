@@ -1,24 +1,30 @@
 <?php
+declare(strict_types=1);
+
 namespace Razoyo\CarProfile\ViewModel;
 
 use Magento\Framework\View\Element\Block\ArgumentInterface;
-use Magento\Framework\HTTP\Client\Curl;
-use Magento\Framework\Json\Helper\Data as JsonHelper;
+use Magento\Framework\HTTP\ClientInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Customer\Model\Session;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
 
 class CarData implements ArgumentInterface
 {
-    /**
-     * @var Curl
-     */
-    private $curl;
+    private const API_URL = 'https://exam.razoyo.com/api/cars';
+    private const TOKEN_HEADER = 'your-token';
+    private const CAR_SELECTION_ATTRIBUTE = 'car_selection';
 
     /**
-     * @var JsonHelper
+     * @var ClientInterface
      */
-    private $jsonHelper;
+    private $httpClient;
+
+    /**
+     * @var Json
+     */
+    private $jsonSerializer;
 
     /**
      * @var Session
@@ -36,73 +42,47 @@ class CarData implements ArgumentInterface
     private $pricingHelper;
 
     /**
-     * Constructor
-     *
-     * @param Curl $curl
-     * @param JsonHelper $jsonHelper
+     * @param ClientInterface $httpClient
+     * @param Json $jsonSerializer
      * @param Session $customerSession
      * @param CustomerRepositoryInterface $customerRepository
      * @param PricingHelper $pricingHelper
      */
     public function __construct(
-        Curl $curl,
-        JsonHelper $jsonHelper,
+        ClientInterface $httpClient,
+        Json $jsonSerializer,
         Session $customerSession,
         CustomerRepositoryInterface $customerRepository,
         PricingHelper $pricingHelper
     ) {
-        $this->curl = $curl;
-        $this->jsonHelper = $jsonHelper;
+        $this->httpClient = $httpClient;
+        $this->jsonSerializer = $jsonSerializer;
         $this->customerSession = $customerSession;
         $this->customerRepository = $customerRepository;
         $this->pricingHelper = $pricingHelper;
     }
-
 
     /**
      * Get car data from API
      *
      * @return array
      */
-    public function getCarData()
+    public function getCarData(): array
     {
-        $url = 'https://exam.razoyo.com/api/cars';
-        $this->curl->get($url);
-        $response = $this->curl->getBody();
-        $data = $this->jsonHelper->jsonDecode($response);
-
-        // Get the token from the response headers
-        $headers = $this->curl->getHeaders();
-        $token = isset($headers['your-token']) ? $headers['your-token'] : null;
-
-        // Add the token to the data
-        $data['token'] = $token;
-        return $data;
-    }
-
-    /**
-     * Get car detail from API
-     *
-     * @return array
-     */
-    public function getCarDetails($carId, $token)
-    {
-        $url = 'https://exam.razoyo.com/api/cars/' . $carId;
-    
-        // Set the authorization header
-        $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Authorization', 'Bearer ' . $token);
-        
-        // Make the GET request
-        $this->curl->get($url);
-        
-        // Get the response body
-        $response = $this->curl->getBody();
-        
-        // Decode the JSON response
-        return $this->jsonHelper->jsonDecode($response);
-        
-
+        try {
+            $this->httpClient->get(self::API_URL);
+            $response = $this->httpClient->getBody();
+            $data = $this->jsonSerializer->unserialize($response);
+            
+            $headers = $this->httpClient->getHeaders();
+            $token = $headers[self::TOKEN_HEADER] ?? null;
+            
+            $data['token'] = $token;
+            return $data;
+        } catch (\Exception $e) {
+            // Log the error or handle it as per your requirements
+            return ['error' => $e->getMessage()];
+        }
     }
 
     /**
@@ -110,25 +90,30 @@ class CarData implements ArgumentInterface
      *
      * @return string|null
      */
-    public function getSelectedCar()
+    public function getSelectedCar(): ?string
     {
         $customerId = $this->customerSession->getCustomerId();
-        if ($customerId) {
-            $customer = $this->customerRepository->getById($customerId);
-            $carSelectionAttribute = $customer->getCustomAttribute('car_selection');
-            $selectedCarId = $carSelectionAttribute ? $carSelectionAttribute->getValue() : null;
+        if (!$customerId) {
+            return null;
         }
-        return $selectedCarId;
 
+        try {
+            $customer = $this->customerRepository->getById($customerId);
+            $carSelectionAttribute = $customer->getCustomAttribute(self::CAR_SELECTION_ATTRIBUTE);
+            return $carSelectionAttribute ? $carSelectionAttribute->getValue() : null;
+        } catch (\Exception $e) {
+            // Log the error or handle it as per your requirements
+            return null;
+        }
     }
 
-     /**
+    /**
      * Get formatted price
      *
      * @param float $price
      * @return string
      */
-    public function getFormattedPrice($price)
+    public function getFormattedPrice(float $price): string
     {
         return $this->pricingHelper->currency($price, true, false);
     }
